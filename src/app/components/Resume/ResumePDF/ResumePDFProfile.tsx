@@ -3,7 +3,11 @@ import {
   ResumePDFIcon,
   type IconType,
 } from "components/Resume/ResumePDF/common/ResumePDFIcon";
-import { styles, spacing } from "components/Resume/ResumePDF/styles";
+import {
+  styles,
+  spacing,
+  TEXT_COLORS,
+} from "components/Resume/ResumePDF/styles";
 import {
   ResumePDFLink,
   ResumePDFSection,
@@ -24,20 +28,36 @@ export const ResumePDFProfile = ({
   const iconProps = { email, phone, location, url };
 
   return (
-    <ResumePDFSection style={{ marginTop: spacing["4"] }}>
+    <ResumePDFSection style={{ marginTop: 0, gap: 0 }}>
       <ResumePDFText
         bold={true}
-        themeColor={themeColor}
-        style={{ fontSize: "20pt" }}
+        style={{
+          fontSize: "24pt",
+          lineHeight: "1.15",
+          letterSpacing: "-0.2pt",
+          color: TEXT_COLORS.heading,
+        }}
       >
         {name}
       </ResumePDFText>
-      {summary && <ResumePDFText>{summary}</ResumePDFText>}
+      {summary && (
+        <ResumePDFText
+          style={{
+            marginTop: spacing["1.5"],
+            lineHeight: "1.4",
+            color: TEXT_COLORS.muted,
+          }}
+        >
+          {summary}
+        </ResumePDFText>
+      )}
       <View
         style={{
-          ...styles.flexRowBetween,
+          ...styles.flexRow,
           flexWrap: "wrap",
-          marginTop: spacing["0.5"],
+          columnGap: 15,
+          rowGap: 3,
+          marginTop: spacing["3"],
         }}
       >
         {Object.entries(iconProps).map(([key, value]) => {
@@ -84,12 +104,14 @@ export const ResumePDFProfile = ({
               style={{
                 ...styles.flexRow,
                 alignItems: "center",
-                gap: spacing["1"],
+                gap: spacing["1.5"],
               }}
             >
-              <ResumePDFIcon type={iconType} isPDF={isPDF} />
+              <ResumePDFIcon type={iconType} isPDF={isPDF} color={themeColor} />
               <Wrapper>
-                <ResumePDFText>{value}</ResumePDFText>
+                <ResumePDFText style={{ color: TEXT_COLORS.body }}>
+                  {value}
+                </ResumePDFText>
               </Wrapper>
             </View>
           );

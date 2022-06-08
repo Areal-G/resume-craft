@@ -8,7 +8,7 @@ import {
 import { usePDF } from "@react-pdf/renderer";
 import dynamic from "next/dynamic";
 
-const ResumeControlBarComponent = ({
+const ResumeControlBar = ({
   scale,
   setScale,
   documentSize,
@@ -34,11 +34,14 @@ const ResumeControlBarComponent = ({
   }, [update, document]);
 
   return (
-    <div className="sticky bottom-0 left-0 right-0 flex h-[var(--resume-control-bar-height)] items-center justify-center px-[var(--resume-padding)] text-gray-600 lg:justify-between">
+    <div className="sticky bottom-0 left-0 right-0 flex h-[var(--resume-control-bar-height)] items-center justify-center px-4 text-gray-600 md:px-[var(--resume-padding)] lg:justify-between">
       <div className="flex items-center gap-2">
         <MagnifyingGlassIcon className="h-5 w-5" aria-hidden="true" />
+        {/* Narrower on phones so the bar fits the screen; it set the preview
+            column's width, which pushed the page off-centre. */}
         <input
           type="range"
+          className="w-24 sm:w-auto"
           min={0.5}
           max={1.5}
           step={0.01}
@@ -60,20 +63,27 @@ const ResumeControlBarComponent = ({
         </label>
       </div>
       <a
-        className="ml-1 flex items-center gap-1 rounded-md border border-gray-300 px-3 py-0.5 hover:bg-gray-100 lg:ml-8"
-        href={instance.url!}
+        className={`ml-1 flex items-center gap-1 rounded-md border border-gray-300 px-3 py-0.5 hover:bg-gray-100 lg:ml-8 ${
+          !instance.url ? "pointer-events-none opacity-50" : ""
+        }`}
+        href={instance.url ?? undefined}
         download={fileName}
+        aria-disabled={!instance.url}
       >
         <ArrowDownTrayIcon className="h-4 w-4" />
-        <span className="whitespace-nowrap">Download Resume</span>
+        <span className="whitespace-nowrap">
+          Download<span className="hidden sm:inline"> Resume</span>
+        </span>
       </a>
     </div>
   );
 };
 
-// Make ResumeControlBar dynamic to make nextjs happy
-export const ResumeControlBar = dynamic(
-  () => Promise.resolve(ResumeControlBarComponent),
+/**
+ * Load ResumeControlBar client side since it uses usePDF, which is a web specific API
+ */
+export const ResumeControlBarCSR = dynamic(
+  () => Promise.resolve(ResumeControlBar),
   {
     ssr: false,
   }

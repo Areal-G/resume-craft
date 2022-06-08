@@ -1,73 +1,54 @@
-import React, { useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { INPUT_CLASS_NAME } from "components/ResumeForm/Form/InputGroup";
+import { DEFAULT_THEME_COLOR } from "lib/redux/settingsSlice";
+import { cx } from "lib/cx";
 
+/**
+ * Featured skills render as tags on the resume, so the input is a plain text
+ * field. The rating is kept in the data model for backward compatibility with
+ * resumes saved by earlier versions, but is no longer shown.
+ */
 export const FeaturedSkillInput = ({
   skill,
   rating,
-  setSkillRating,
+  onChange,
+  onRemove,
   placeholder,
   className,
-  circleColor,
+  accentColor = DEFAULT_THEME_COLOR,
 }: {
   skill: string;
   rating: number;
-  setSkillRating: (skill: string, rating: number) => void;
+  onChange: (skill: string, rating: number) => void;
+  onRemove?: () => void;
   placeholder: string;
   className?: string;
-  circleColor?: string;
-}) => {
-  return (
-    <div className={`flex ${className}`}>
-      <input
-        type="text"
-        value={skill}
-        placeholder={placeholder}
-        onChange={(e) => setSkillRating(e.target.value, rating)}
-        className={INPUT_CLASS_NAME}
-      />
-      <CircleRating
-        rating={rating}
-        setRating={(newRating) => setSkillRating(skill, newRating)}
-        circleColor={circleColor}
-      />
-    </div>
-  );
-};
-
-const CircleRating = ({
-  rating,
-  setRating,
-  circleColor = "#38bdf8",
-}: {
-  rating: number;
-  setRating: (rating: number) => void;
-  circleColor?: string;
-}) => {
-  const numCircles = 5;
-  const [hoverRating, setHoverRating] = useState<number | null>(null);
-
-  return (
-    <div className="flex items-center p-2">
-      {[...Array(numCircles)].map((_, idx) => (
-        <div
-          className={`cursor-pointer p-0.5`}
-          key={idx}
-          onClick={() => setRating(idx)}
-          onMouseEnter={() => setHoverRating(idx)}
-          onMouseLeave={() => setHoverRating(null)}
-        >
-          <div
-            className="h-5 w-5 rounded-full transition-transform duration-200 hover:scale-[120%] "
-            style={{
-              backgroundColor:
-                (hoverRating !== null && hoverRating >= idx) ||
-                (hoverRating === null && rating >= idx)
-                  ? circleColor
-                  : "#d1d5db", //gray-300
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
+  accentColor?: string;
+}) => (
+  <div className={cx("relative flex items-center", className)}>
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute left-3 h-2 w-2 rounded-full"
+      style={{ backgroundColor: accentColor }}
+    />
+    <input
+      type="text"
+      value={skill}
+      placeholder={placeholder}
+      aria-label={placeholder}
+      onChange={(e) => onChange(e.target.value, rating)}
+      className={cx(INPUT_CLASS_NAME, "pl-7", onRemove && "pr-9")}
+    />
+    {onRemove && (
+      <button
+        type="button"
+        onClick={onRemove}
+        title="Remove skill"
+        aria-label={`Remove ${skill || "skill"}`}
+        className="absolute right-1.5 mt-1 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"
+      >
+        <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+      </button>
+    )}
+  </div>
+);

@@ -1,8 +1,9 @@
 "use client";
-import { loadStateFromLocalStorage } from "lib/redux/local-storage";
+import { getHasUsedAppBefore } from "lib/redux/local-storage";
 import { ResumeDropzone } from "components/ResumeDropzone";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { TrySampleResumeButton } from "components/TrySampleResumeButton";
 
 export default function ImportResume() {
   const [hasUsedAppBefore, setHasUsedAppBefore] = useState(false);
@@ -12,7 +13,7 @@ export default function ImportResume() {
   };
 
   useEffect(() => {
-    setHasUsedAppBefore(Boolean(loadStateFromLocalStorage()));
+    setHasUsedAppBefore(getHasUsedAppBefore());
   }, []);
 
   return (
@@ -34,6 +35,12 @@ export default function ImportResume() {
                   heading="Don't have a resume yet?"
                   buttonText="Create from scratch"
                 />
+                <OrDivider />
+                <p className="font-semibold text-gray-900">Just exploring?</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Load a complete example resume and play with every feature
+                </p>
+                <TrySampleResumeButton className="mt-5" />
               </>
             )}
           </>
@@ -55,6 +62,12 @@ export default function ImportResume() {
               onFileUrlChange={onFileUrlChange}
               className="mt-5"
             />
+            {!hasAddedResume && (
+              <>
+                <OrDivider />
+                <TrySampleResumeButton text="Replace with the sample resume" />
+              </>
+            )}
           </>
         )}
       </div>
@@ -83,7 +96,7 @@ const SectionWithHeadingAndCreateButton = ({
       <div className="mt-5">
         <Link
           href="/resume-builder"
-          className="outline-theme-blue rounded-full bg-sky-500 px-6 pb-2 pt-1.5 text-base font-semibold text-white"
+          className="bg-primary outline-theme-purple rounded-full px-6 pb-2 pt-1.5 text-base font-semibold"
         >
           {buttonText}
         </Link>

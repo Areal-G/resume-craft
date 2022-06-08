@@ -1,38 +1,29 @@
 import Image from "next/image";
 import featureFreeSrc from "public/assets/feature-free.svg";
-import featureUSSrc from "public/assets/feature-us.svg";
+import featureAtsSrc from "public/assets/feature-ats.svg";
 import featurePrivacySrc from "public/assets/feature-privacy.svg";
-import featureOpenSourceSrc from "public/assets/feature-open-source.svg";
-import { Link } from "components/documentation";
+import featurePreviewSrc from "public/assets/feature-preview.svg";
 
 const FEATURES = [
   {
     src: featureFreeSrc,
-    title: "Free Forever",
-    text: "Resume Craft is created with the belief that everyone should have free and easy access to a modern professional resume design",
+    title: "Free to Use",
+    text: "Every template option, font and export is free. No watermarks, no paywalls and no trial that runs out the night before a deadline",
   },
   {
-    src: featureUSSrc,
-    title: "U.S. Best Practices",
-    text: "Resume Craft has built-in best practices for the U.S. job market and works well with top ATS platforms such as Greenhouse and Lever",
+    src: featureAtsSrc,
+    title: "ATS-Friendly",
+    text: "Clean single-column layouts that applicant tracking systems read reliably, plus a built-in parser to check your resume before you apply",
   },
   {
     src: featurePrivacySrc,
-    title: "Privacy Focus",
-    text: "Resume Craft stores data locally in your browser so only you have access to your data and with complete control",
+    title: "Private by Design",
+    text: "No sign up and no servers. Your resume is stored only in your browser, so you stay in full control of your data",
   },
   {
-    src: featureOpenSourceSrc,
-    title: "Open-Source",
-    text: (
-      <>
-        Resume Craft is an open-source project, and its source code can be viewed
-        by anyone on its{" "}
-        <Link href="https://github.com/areal/resume-craft">
-          GitHub repository
-        </Link>
-      </>
-    ),
+    src: featurePreviewSrc,
+    title: "Live PDF Preview",
+    text: "See a pixel-perfect preview as you type, switch fonts, colors and page sizes in one click, then download a polished PDF",
   },
 ];
 

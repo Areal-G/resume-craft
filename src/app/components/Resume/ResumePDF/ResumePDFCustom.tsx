@@ -25,6 +25,7 @@ export const ResumePDFCustom = ({
         <ResumePDFBulletList
           items={descriptions}
           showBulletPoints={showBulletPoints}
+          themeColor={themeColor}
         />
       </View>
     </ResumePDFSection>

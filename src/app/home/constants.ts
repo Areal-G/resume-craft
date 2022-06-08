@@ -9,13 +9,13 @@ import { deepClone } from "lib/deep-clone";
 
 export const END_HOME_RESUME: Resume = {
   profile: {
-    name: "John Doe",
+    name: "Alex Rivera",
     summary:
-      "Software engineer obsessed with building exceptional products that people love",
-    email: "hello@resumecraft.com",
-    phone: "123-456-7890",
-    location: "NYC, NY",
-    url: "linkedin.com/in/john-doe",
+      "Software engineer who loves building fast, thoughtful products people enjoy using",
+    email: "alex.rivera@example.com",
+    phone: "(555) 123-4567",
+    location: "Austin, TX",
+    url: "linkedin.com/in/alex-rivera",
   },
   workExperiences: [
     {
@@ -63,10 +63,10 @@ export const END_HOME_RESUME: Resume = {
   ],
   projects: [
     {
-      project: "Resume Craft",
+      project: "Pocket Budget",
       date: "Spring 2023",
       descriptions: [
-        "Created and launched a free resume builder web app that allows thousands of users to create professional resume easily and land their dream jobs",
+        "Built and launched a personal finance app that helps 5,000+ students track spending and hit savings goals",
       ],
     },
   ],

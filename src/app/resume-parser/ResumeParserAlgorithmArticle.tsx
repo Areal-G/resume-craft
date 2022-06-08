@@ -58,7 +58,7 @@ export const ResumeParserAlgorithmArticle = ({
         <span key={idx}>
           {item.text}
           {idx !== line.length - 1 && (
-            <span className="select-none font-extrabold text-sky-400">
+            <span className="select-none font-extrabold text-indigo-500">
               &nbsp;&nbsp;{"|"}&nbsp;&nbsp;
             </span>
           )}
@@ -206,7 +206,7 @@ export const ResumeParserAlgorithmArticle = ({
         from the resume PDF added, as shown in the table below. The result is
         much more readable when displayed in lines. (Some lines might have
         multiple text items, which are separated by a blue vertical divider{" "}
-        <span className="select-none font-extrabold text-sky-400">
+        <span className="select-none font-extrabold text-indigo-500">
           &nbsp;{"|"}&nbsp;
         </span>
         )
@@ -348,10 +348,6 @@ export const ResumeParserAlgorithmArticle = ({
       <Paragraph>
         And that is everything about the Resume Craft parser algorithm :)
       </Paragraph>
-      <Paragraph>
-        Written by <Link href="https://github.com/areal">Areal</Link> on
-        June 2023
-      </Paragraph>
     </article>
   );
 };
@@ -434,7 +430,7 @@ const Step3SectionsTable = ({
           <span key={idx}>
             {item.text}
             {idx !== line.length - 1 && (
-              <span className="select-none font-extrabold text-sky-400">
+              <span className="select-none font-extrabold text-indigo-500">
                 &nbsp;&nbsp;{"|"}&nbsp;&nbsp;
               </span>
             )}

@@ -1,14 +1,18 @@
+/**
+ * Accent colors for the resume. All are deep (600-800) shades so headings,
+ * company names and tags stay readable as text and print well in grayscale.
+ */
 export const THEME_COLORS = [
-  "#f87171", // Red-400
-  "#ef4444", // Red-500
-  "#fb923c", // Orange-400
-  "#f97316", // Orange-500
-  "#fbbf24", // Amber-400
-  "#f59e0b", // Amber-500
-  "#22c55e", // Green-500
-  "#15803d", // Green-700
-  "#38bdf8", // Sky-400
-  "#0ea5e9", // Sky-500
-  "#818cf8", // Indigo-400
-  "#6366f1", // Indigo-500
+  "#1d4ed8", // Blue-700
+  "#4338ca", // Indigo-700
+  "#6d28d9", // Violet-700
+  "#0369a1", // Sky-700
+  "#0f766e", // Teal-700
+  "#047857", // Emerald-700
+  "#b45309", // Amber-700
+  "#c2410c", // Orange-700
+  "#b91c1c", // Red-700
+  "#be123c", // Rose-700
+  "#334155", // Slate-700
+  "#111827", // Gray-900
 ];

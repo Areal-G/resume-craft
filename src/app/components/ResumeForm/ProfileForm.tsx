@@ -20,7 +20,7 @@ export const ProfileForm = () => {
           label="Name"
           labelClassName="col-span-full"
           name="name"
-          placeholder="Sal Khan"
+          placeholder="Jordan Lee"
           value={name}
           onChange={handleProfileChange}
         />
@@ -28,7 +28,7 @@ export const ProfileForm = () => {
           label="Objective"
           labelClassName="col-span-full"
           name="summary"
-          placeholder="Entrepreneur and educator obsessed with making education free for anyone"
+          placeholder="Product-minded engineer who loves turning ideas into polished, reliable software"
           value={summary}
           onChange={handleProfileChange}
         />
@@ -36,7 +36,7 @@ export const ProfileForm = () => {
           label="Email"
           labelClassName="col-span-4"
           name="email"
-          placeholder="hello@khanacademy.org"
+          placeholder="jordan.lee@example.com"
           value={email}
           onChange={handleProfileChange}
         />
@@ -52,7 +52,7 @@ export const ProfileForm = () => {
           label="Website"
           labelClassName="col-span-4"
           name="url"
-          placeholder="linkedin.com/in/khanacademy"
+          placeholder="linkedin.com/in/jordan-lee"
           value={url}
           onChange={handleProfileChange}
         />

@@ -26,7 +26,7 @@ export const divideSectionIntoSubsections = (lines: Lines): Subsections => {
         !isBold(prevLine[0]) &&
         isBold(line[0]) &&
         // Ignore bullet points that sometimes being marked as bolded
-        !BULLET_POINTS.includes(line[0].text)
+        !startsWithBulletPoint(line)
       ) {
         return true;
       }
@@ -37,6 +37,12 @@ export const divideSectionIntoSubsections = (lines: Lines): Subsections => {
   }
 
   return subsections;
+};
+
+// Bullets are often merged with their text when lines are grouped ("•Led ...")
+const startsWithBulletPoint = (line: Line) => {
+  const text = line[0]?.text.trimStart() ?? "";
+  return BULLET_POINTS.some((bullet) => text.startsWith(bullet));
 };
 
 type IsLineNewSubsection = (line: Line, prevLine: Line) => boolean;
@@ -62,6 +68,9 @@ const createIsLineNewSubsectionByLineGap = (
   const subsectionLineGapThreshold = lineGapWithMostCount * 1.4;
 
   const isLineNewSubsection = (line: Line, prevLine: Line) => {
+    // A bullet point always continues the current subsection, even when the
+    // layout adds extra space before the first bullet
+    if (startsWithBulletPoint(line)) return false;
     return Math.round(prevLine[0].y - line[0].y) > subsectionLineGapThreshold;
   };
 

@@ -13,14 +13,14 @@ const makeTextItem = (text: string) =>
 
 describe("extract-profile tests - ", () => {
   it("Name", () => {
-    expect(
-      matchOnlyLetterSpaceOrPeriod(makeTextItem("Leonardo W. DiCaprio"))![0]
-    ).toBe("Leonardo W. DiCaprio");
+    expect(matchOnlyLetterSpaceOrPeriod(makeTextItem("Jane A. Doe"))![0]).toBe(
+      "Jane A. Doe"
+    );
   });
 
   it("Email", () => {
-    expect(matchEmail(makeTextItem("  hello@resume-craft.org  "))![0]).toBe(
-      "hello@resume-craft.org"
+    expect(matchEmail(makeTextItem("  hello@example.org  "))![0]).toBe(
+      "hello@example.org"
     );
   });
 
@@ -31,9 +31,9 @@ describe("extract-profile tests - ", () => {
   });
 
   it("Url", () => {
-    expect(matchUrl(makeTextItem("  linkedin.com/in/resume-craft  "))![0]).toBe(
-      "linkedin.com/in/resume-craft"
+    expect(matchUrl(makeTextItem("  linkedin.com/in/jane-doe  "))![0]).toBe(
+      "linkedin.com/in/jane-doe"
     );
-    expect(matchUrl(makeTextItem("hello@resume-craft.org"))).toBeFalsy();
+    expect(matchUrl(makeTextItem("hello@example.org"))).toBeFalsy();
   });
 });

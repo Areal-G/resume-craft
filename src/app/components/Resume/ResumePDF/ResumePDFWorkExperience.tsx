@@ -3,10 +3,17 @@ import {
   ResumePDFSection,
   ResumePDFBulletList,
   ResumePDFText,
+  ResumePDFEntryHeader,
 } from "components/Resume/ResumePDF/common";
 import { styles, spacing } from "components/Resume/ResumePDF/styles";
 import type { ResumeWorkExperience } from "lib/redux/types";
 
+/**
+ * Entry layout follows the F-pattern recruiters scan in:
+ *   Job Title (bold)                        Date (muted, right)
+ *   Company (bold, accent color)
+ *   • bullets
+ */
 export const ResumePDFWorkExperience = ({
   heading,
   workExperiences,
@@ -24,24 +31,30 @@ export const ResumePDFWorkExperience = ({
           idx > 0 && company === workExperiences[idx - 1].company;
 
         return (
-          <View key={idx} style={idx !== 0 ? { marginTop: spacing["2"] } : {}}>
-            {!hideCompanyName && (
-              <ResumePDFText bold={true}>{company}</ResumePDFText>
+          <View
+            key={idx}
+            style={{
+              ...styles.flexCol,
+              marginTop: idx !== 0 ? spacing["2.5"] : 0,
+            }}
+          >
+            <ResumePDFEntryHeader title={jobTitle} date={date} />
+            {!hideCompanyName && company && (
+              <ResumePDFText
+                bold={true}
+                style={{ color: themeColor, marginTop: spacing["0.5"] }}
+              >
+                {company}
+              </ResumePDFText>
             )}
-            <View
-              style={{
-                ...styles.flexRowBetween,
-                marginTop: hideCompanyName
-                  ? "-" + spacing["1"]
-                  : spacing["1.5"],
-              }}
-            >
-              <ResumePDFText>{jobTitle}</ResumePDFText>
-              <ResumePDFText>{date}</ResumePDFText>
-            </View>
-            <View style={{ ...styles.flexCol, marginTop: spacing["1.5"] }}>
-              <ResumePDFBulletList items={descriptions} />
-            </View>
+            {descriptions.length > 0 && (
+              <View style={{ ...styles.flexCol, marginTop: spacing["1.5"] }}>
+                <ResumePDFBulletList
+                  items={descriptions}
+                  themeColor={themeColor}
+                />
+              </View>
+            )}
           </View>
         );
       })}

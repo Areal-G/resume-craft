@@ -15,6 +15,7 @@ import { ThemeForm } from "components/ResumeForm/ThemeForm";
 import { CustomForm } from "components/ResumeForm/CustomForm";
 import { FlexboxSpacer } from "components/FlexboxSpacer";
 import { cx } from "lib/cx";
+import { SampleResumeBanner } from "components/ResumeForm/SampleResumeBanner";
 
 const formTypeToComponent: { [type in ShowForm]: () => JSX.Element } = {
   workExperiences: WorkExperiencesForm,
@@ -34,13 +35,14 @@ export const ResumeForm = () => {
   return (
     <div
       className={cx(
-        "flex justify-center scrollbar scrollbar-track-gray-100 scrollbar-w-3 md:h-[calc(100vh-var(--top-nav-bar-height))] md:justify-end md:overflow-y-scroll",
-        isHover && "scrollbar-thumb-gray-200"
+        "flex justify-center scrollbar-thin scrollbar-track-gray-100 md:h-[calc(100vh-var(--top-nav-bar-height))] md:justify-end md:overflow-y-scroll",
+        isHover ? "scrollbar-thumb-gray-200" : "scrollbar-thumb-gray-100"
       )}
       onMouseOver={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
       <section className="flex max-w-2xl flex-col gap-8 p-[var(--resume-padding)]">
+        <SampleResumeBanner />
         <ProfileForm />
         {formsOrder.map((form) => {
           const Component = formTypeToComponent[form];

@@ -1,7 +1,22 @@
-type Object = { [key: string]: any };
+type PlainObject = Record<string, unknown>;
 
-const isObject = (item: any): item is Object => {
-  return item && typeof item === "object" && !Array.isArray(item);
+const isObject = (item: unknown): item is PlainObject =>
+  Boolean(item) && typeof item === "object" && !Array.isArray(item);
+
+const mergeInto = (target: PlainObject, source: PlainObject) => {
+  for (const key in source) {
+    const sourceValue = source[key];
+    // Assign source value to target if source value is not an object.
+    // Otherwise, merge recursively to keep every nested key.
+    if (!isObject(sourceValue)) {
+      target[key] = sourceValue;
+    } else {
+      const targetValue = target[key];
+      const nested: PlainObject = isObject(targetValue) ? targetValue : {};
+      target[key] = nested;
+      mergeInto(nested, sourceValue);
+    }
+  }
 };
 
 /**
@@ -9,20 +24,8 @@ const isObject = (item: any): item is Object => {
  * It returns a new object and doesn't modify any object in place since
  * it deep clones the target object first.
  */
-export const deepMerge = (target: Object, source: Object, level = 0) => {
-  const copyTarget = level === 0 ? structuredClone(target) : target;
-  for (const key in source) {
-    const sourceValue = source[key];
-    // Assign source value to copyTarget if source value is not an object.
-    // Otherwise, call deepMerge recursively to merge all its keys
-    if (!isObject(sourceValue)) {
-      copyTarget[key] = sourceValue;
-    } else {
-      if (!isObject(copyTarget[key])) {
-        copyTarget[key] = {};
-      }
-      deepMerge(copyTarget[key], sourceValue, level + 1);
-    }
-  }
+export const deepMerge = <T extends object>(target: T, source: unknown): T => {
+  const copyTarget = structuredClone(target);
+  if (isObject(source)) mergeInto(copyTarget as PlainObject, source);
   return copyTarget;
 };

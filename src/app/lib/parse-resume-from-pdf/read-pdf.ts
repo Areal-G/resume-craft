@@ -1,7 +1,7 @@
 // Getting pdfjs to work is tricky. The following 3 lines would make it work
 // https://stackoverflow.com/a/63486898/7699841
 import * as pdfjs from "pdfjs-dist";
-// @ts-ignore
+// @ts-expect-error -- the worker entry ships without type declarations
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -22,7 +22,12 @@ import type { TextItem, TextItems } from "lib/parse-resume-from-pdf/types";
  * }
  */
 export const readPdf = async (fileUrl: string): Promise<TextItems> => {
-  const pdfFile = await pdfjs.getDocument(fileUrl).promise;
+  // isEvalSupported: false blocks the font-program code execution issue in
+  // pdf.js (CVE-2024-4367) when parsing untrusted, user-supplied PDFs.
+  const pdfFile = await pdfjs.getDocument({
+    url: fileUrl,
+    isEvalSupported: false,
+  }).promise;
   let textItems: TextItems = [];
 
   for (let i = 1; i <= pdfFile.numPages; i++) {

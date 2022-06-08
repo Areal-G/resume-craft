@@ -1,10 +1,9 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { ResumePDF } from "components/Resume/ResumePDF";
-import type { Resume } from "lib/redux/types";
 import { initialResumeState } from "lib/redux/resumeSlice";
 import { initialSettings } from "lib/redux/settingsSlice";
-import { ResumeIFrame } from "components/Resume/ResumeIFrame";
+import { ResumeIframeCSR } from "components/Resume/ResumeIFrame";
 import { START_HOME_RESUME, END_HOME_RESUME } from "home/constants";
 import { makeObjectCharIterator } from "lib/make-object-char-iterator";
 import { useTailwindBreakpoints } from "lib/hooks/useTailwindBreakpoints";
@@ -21,7 +20,7 @@ const CHARS_PER_INTERVAL = 10;
 const RESET_INTERVAL_MS = 60 * 1000; // 60s
 
 export const AutoTypingResume = () => {
-  const [resume, setResume] = useState(deepClone(initialResumeState) as Resume);
+  const [resume, setResume] = useState(deepClone(initialResumeState));
   const resumeCharIterator = useRef(
     makeObjectCharIterator(START_HOME_RESUME, END_HOME_RESUME)
   );
@@ -61,7 +60,7 @@ export const AutoTypingResume = () => {
 
   return (
     <>
-      <ResumeIFrame documentSize="Letter" scale={isLg ? 0.7 : 0.5}>
+      <ResumeIframeCSR documentSize="A4" scale={isLg ? 0.7 : 0.5}>
         <ResumePDF
           resume={resume}
           settings={{
@@ -78,7 +77,7 @@ export const AutoTypingResume = () => {
             },
           }}
         />
-      </ResumeIFrame>
+      </ResumeIframeCSR>
     </>
   );
 };

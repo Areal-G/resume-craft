@@ -1,23 +1,4 @@
-import { StyleSheet, Font } from "@react-pdf/renderer";
-import { FONT_FAMILIES } from "public/fonts/fonts";
-
-FONT_FAMILIES.forEach((fontFamily) => {
-  Font.register({
-    family: fontFamily,
-    fonts: [
-      {
-        src: `fonts/${fontFamily}-Regular.ttf`,
-      },
-      {
-        src: `fonts/${fontFamily}-Bold.ttf`,
-        fontWeight: "bold",
-      },
-    ],
-  });
-});
-
-// Disable hyphenation https://github.com/diegomura/react-pdf/issues/311#issuecomment-548301604
-Font.registerHyphenationCallback((word) => [word]);
+import { StyleSheet } from "@react-pdf/renderer";
 
 // Tailwindcss Spacing Design System: https://tailwindcss.com/docs/theme#spacing
 // It is converted from rem to pt (1rem = 12pt) since https://react-pdf.org/styling only accepts pt unit
@@ -74,8 +55,31 @@ export const styles = StyleSheet.create({
     flexDirection: "column",
   },
   icon: {
-    width: "13pt",
-    height: "13pt",
+    width: "10pt",
+    height: "10pt",
     fill: "#525252", // text-neutral-600
   },
 });
+
+/** Text colors for a clear, print-friendly hierarchy */
+export const TEXT_COLORS = {
+  heading: "#111827", // gray-900: name, titles, school, project
+  body: "#374151", // gray-700: bullet text
+  muted: "#6b7280", // gray-500: dates, summary, contact
+  rule: "#e5e7eb", // gray-200: hairline under section headings
+} as const;
+
+/**
+ * Mix a hex color with white. amount = 0 returns the color, 1 returns white.
+ * Used for soft tag backgrounds that print well.
+ */
+export const tint = (hex: string, amount: number) => {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!match) return "#f3f4f6";
+  const num = parseInt(match[1], 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * amount);
+  const r = mix((num >> 16) & 255);
+  const g = mix((num >> 8) & 255);
+  const b = mix(num & 255);
+  return "#" + [r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("");
+};

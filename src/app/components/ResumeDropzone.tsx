@@ -2,12 +2,16 @@ import { useState } from "react";
 import { LockClosedIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { parseResumeFromPdf } from "lib/parse-resume-from-pdf";
-import { saveStateToLocalStorage } from "lib/redux/local-storage";
-import { initialSettings } from "lib/redux/settingsSlice";
+import {
+  getHasUsedAppBefore,
+  saveStateToLocalStorage,
+} from "lib/redux/local-storage";
+import { type ShowForm, initialSettings } from "lib/redux/settingsSlice";
 import { useRouter } from "next/navigation";
 import addPdfSrc from "public/assets/add-pdf.svg";
 import Image from "next/image";
 import { cx } from "lib/cx";
+import { deepClone } from "lib/deep-clone";
 
 const defaultFileState = {
   name: "",
@@ -27,6 +31,8 @@ export const ResumeDropzone = ({
   const [file, setFile] = useState(defaultFileState);
   const [isHoveredOnDropzone, setIsHoveredOnDropzone] = useState(false);
   const [hasNonPdfFile, setHasNonPdfFile] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
   const router = useRouter();
 
   const hasFile = Boolean(file.name);
@@ -44,32 +50,71 @@ export const ResumeDropzone = ({
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const newFile = event.dataTransfer.files[0];
-    if (newFile.name.endsWith(".pdf")) {
+    setIsHoveredOnDropzone(false);
+    // Dragging text or links has no files, so guard against undefined
+    const newFile = event.dataTransfer.files?.[0];
+    if (!newFile) return;
+    acceptFile(newFile);
+  };
+
+  const acceptFile = (newFile: File) => {
+    if (isPdfFile(newFile)) {
       setHasNonPdfFile(false);
+      setImportError("");
       setNewFile(newFile);
     } else {
       setHasNonPdfFile(true);
     }
-    setIsHoveredOnDropzone(false);
   };
 
-  const onInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
     const newFile = files[0];
-    setNewFile(newFile);
+    if (newFile) acceptFile(newFile);
+    // Reset so selecting the same file again still fires onChange
+    event.target.value = "";
   };
 
   const onRemove = () => {
+    if (file.fileUrl) URL.revokeObjectURL(file.fileUrl);
+    setImportError("");
     setFile(defaultFileState);
     onFileUrlChange("");
   };
 
   const onImportClick = async () => {
-    const resume = await parseResumeFromPdf(file.fileUrl);
-    saveStateToLocalStorage({ resume, settings: initialSettings });
+    setImportError("");
+    setIsImporting(true);
+    let resume;
+    try {
+      resume = await parseResumeFromPdf(file.fileUrl);
+    } catch {
+      setIsImporting(false);
+      setImportError(
+        "We couldn't read this PDF. It may be damaged, password-protected or a scanned image."
+      );
+      return;
+    }
+    const settings = deepClone(initialSettings);
+
+    // Set formToShow settings based on uploaded resume if users have used the app before
+    if (getHasUsedAppBefore()) {
+      const sections = Object.keys(settings.formToShow) as ShowForm[];
+      const sectionToFormToShow: Record<ShowForm, boolean> = {
+        workExperiences: resume.workExperiences.length > 0,
+        educations: resume.educations.length > 0,
+        projects: resume.projects.length > 0,
+        skills: resume.skills.descriptions.length > 0,
+        custom: resume.custom.descriptions.length > 0,
+      };
+      for (const section of sections) {
+        settings.formToShow[section] = sectionToFormToShow[section];
+      }
+    }
+
+    saveStateToLocalStorage({ resume, settings });
     router.push("/resume-builder");
   };
 
@@ -77,7 +122,7 @@ export const ResumeDropzone = ({
     <div
       className={cx(
         "flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 ",
-        isHoveredOnDropzone && "border-sky-400",
+        isHoveredOnDropzone && "border-indigo-400",
         playgroundView ? "pb-6 pt-4" : "py-12",
         className
       )}
@@ -111,7 +156,7 @@ export const ResumeDropzone = ({
                 !playgroundView && "text-lg font-semibold"
               )}
             >
-              Browse a pdf file or drop it here
+              Browse for a PDF file or drop it here
             </p>
             <p className="flex text-sm text-gray-500">
               <LockClosedIcon className="mr-1 mt-1 h-3 w-3 text-gray-400" />
@@ -125,11 +170,12 @@ export const ResumeDropzone = ({
             </div>
             <button
               type="button"
-              className="outline-theme-blue rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+              className="outline-theme-purple rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
               title="Remove file"
+              aria-label="Remove file"
               onClick={onRemove}
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XMarkIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -151,7 +197,9 @@ export const ResumeDropzone = ({
                 />
               </label>
               {hasNonPdfFile && (
-                <p className="mt-6 text-red-400">Only pdf file is supported</p>
+                <p className="mt-6 text-red-400">
+                  Only PDF files are supported
+                </p>
               )}
             </>
           ) : (
@@ -161,13 +209,18 @@ export const ResumeDropzone = ({
                   type="button"
                   className="btn-primary"
                   onClick={onImportClick}
+                  disabled={isImporting}
                 >
-                  Import and Continue <span aria-hidden="true">→</span>
+                  {isImporting ? "Importing..." : "Import and Continue"}{" "}
+                  <span aria-hidden="true">→</span>
                 </button>
               )}
-              <p className={cx(" text-gray-500", !playgroundView && "mt-6")}>
+              {importError && (
+                <p className="mt-6 text-red-500">{importError}</p>
+              )}
+              <p className={cx("text-gray-500", !playgroundView && "mt-6")}>
                 Note: {!playgroundView ? "Import" : "Parser"} works best on
-                single column resume
+                single-column resumes
               </p>
             </>
           )}
@@ -176,6 +229,9 @@ export const ResumeDropzone = ({
     </div>
   );
 };
+
+const isPdfFile = (file: File) =>
+  file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
 const getFileSizeString = (fileSizeB: number) => {
   const fileSizeKB = fileSizeB / 1024;

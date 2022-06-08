@@ -3,8 +3,13 @@ import {
   ResumePDFBulletList,
   ResumePDFSection,
   ResumePDFText,
+  ResumePDFEntryHeader,
 } from "components/Resume/ResumePDF/common";
-import { styles, spacing } from "components/Resume/ResumePDF/styles";
+import {
+  styles,
+  spacing,
+  TEXT_COLORS,
+} from "components/Resume/ResumePDF/styles";
 import type { ResumeEducation } from "lib/redux/types";
 
 export const ResumePDFEducation = ({
@@ -26,32 +31,34 @@ export const ResumePDFEducation = ({
           const hideSchoolName =
             idx > 0 && school === educations[idx - 1].school;
           const showDescriptions = descriptions.join() !== "";
+          const degreeText = gpa
+            ? `${degree} - ${Number(gpa) ? gpa + " GPA" : gpa}`
+            : degree;
 
           return (
-            <View key={idx}>
+            <View
+              key={idx}
+              style={{
+                ...styles.flexCol,
+                marginTop: idx !== 0 ? spacing["2.5"] : 0,
+              }}
+            >
               {!hideSchoolName && (
-                <ResumePDFText bold={true}>{school}</ResumePDFText>
+                <ResumePDFEntryHeader title={school} date={date} />
               )}
-              <View
-                style={{
-                  ...styles.flexRowBetween,
-                  marginTop: hideSchoolName
-                    ? "-" + spacing["1"]
-                    : spacing["1.5"],
-                }}
-              >
-                <ResumePDFText>{`${
-                  gpa
-                    ? `${degree} - ${Number(gpa) ? gpa + " GPA" : gpa}`
-                    : degree
-                }`}</ResumePDFText>
-                <ResumePDFText>{date}</ResumePDFText>
-              </View>
+              {degreeText && (
+                <ResumePDFText
+                  style={{ color: TEXT_COLORS.body, marginTop: spacing["0.5"] }}
+                >
+                  {degreeText}
+                </ResumePDFText>
+              )}
               {showDescriptions && (
                 <View style={{ ...styles.flexCol, marginTop: spacing["1.5"] }}>
                   <ResumePDFBulletList
                     items={descriptions}
                     showBulletPoints={showBulletPoints}
+                    themeColor={themeColor}
                   />
                 </View>
               )}

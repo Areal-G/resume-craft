@@ -34,26 +34,29 @@ export type IconType =
 export const ResumePDFIcon = ({
   type,
   isPDF,
+  color,
 }: {
   type: IconType;
   isPDF: boolean;
+  color?: string;
 }) => {
   const pathD = TYPE_TO_PATH_D[type];
+  const fill = color || styles.icon.fill;
   if (isPDF) {
-    return <PDFIcon pathD={pathD} />;
+    return <PDFIcon pathD={pathD} fill={fill} />;
   }
-  return <SVGIcon pathD={pathD} />;
+  return <SVGIcon pathD={pathD} fill={fill} />;
 };
 
-const { width, height, fill } = styles.icon;
+const { width, height } = styles.icon;
 
-const PDFIcon = ({ pathD }: { pathD: string }) => (
+const PDFIcon = ({ pathD, fill }: { pathD: string; fill: string }) => (
   <Svg viewBox="0 0 512 512" style={{ width, height }}>
     <Path d={pathD} fill={fill} />
   </Svg>
 );
 
-const SVGIcon = ({ pathD }: { pathD: string }) => (
+const SVGIcon = ({ pathD, fill }: { pathD: string; fill: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 512 512"

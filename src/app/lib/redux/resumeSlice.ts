@@ -42,6 +42,7 @@ export const initialProject: ResumeProject = {
 };
 
 export const initialFeaturedSkill: FeaturedSkill = { skill: "", rating: 4 };
+export const MAX_FEATURED_SKILLS = 12;
 export const initialFeaturedSkills: FeaturedSkill[] = Array(6).fill({
   ...initialFeaturedSkill,
 });
@@ -134,6 +135,14 @@ export const resumeSlice = createSlice({
         featuredSkill.rating = rating;
       }
     },
+    addFeaturedSkill: (draft) => {
+      if (draft.skills.featuredSkills.length < MAX_FEATURED_SKILLS) {
+        draft.skills.featuredSkills.push({ ...initialFeaturedSkill });
+      }
+    },
+    deleteFeaturedSkill: (draft, action: PayloadAction<{ idx: number }>) => {
+      draft.skills.featuredSkills.splice(action.payload.idx, 1);
+    },
     changeCustom: (
       draft,
       action: PayloadAction<{ field: "descriptions"; value: string[] }>
@@ -206,6 +215,8 @@ export const {
   changeEducations,
   changeProjects,
   changeSkills,
+  addFeaturedSkill,
+  deleteFeaturedSkill,
   changeCustom,
   addSectionInForm,
   moveSectionInForm,

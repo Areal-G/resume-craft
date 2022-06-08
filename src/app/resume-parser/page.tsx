@@ -7,48 +7,54 @@ import { groupLinesIntoSections } from "lib/parse-resume-from-pdf/group-lines-in
 import { extractResumeFromSections } from "lib/parse-resume-from-pdf/extract-resume-from-sections";
 import { ResumeDropzone } from "components/ResumeDropzone";
 import { cx } from "lib/cx";
-import { Heading, Link, Paragraph } from "components/documentation";
+import { Heading, Paragraph } from "components/documentation";
 import { ResumeTable } from "resume-parser/ResumeTable";
 import { FlexboxSpacer } from "components/FlexboxSpacer";
 import { ResumeParserAlgorithmArticle } from "resume-parser/ResumeParserAlgorithmArticle";
 
 const RESUME_EXAMPLES = [
   {
-    fileUrl: "resume-example/laverne-resume.pdf",
-    description: (
-      <span>
-        Borrowed from University of La Verne Career Center -{" "}
-        <Link href="https://laverne.edu/careers/wp-content/uploads/sites/15/2010/12/Undergraduate-Student-Resume-Examples.pdf">
-          Link
-        </Link>
-      </span>
-    ),
+    fileUrl: "resume-example/sample-resume-engineer.pdf",
+    title: "Senior Software Engineer",
+    description: "A4 size, Lato font and an indigo theme",
   },
   {
-    fileUrl: "resume-example/resumecraft-resume.pdf",
-    description: (
-      <span>
-        Created with Resume Craft resume builder -{" "}
-        <Link href="/resume-builder">Link</Link>
-      </span>
-    ),
+    fileUrl: "resume-example/sample-resume-analyst.pdf",
+    title: "Data Analyst",
+    description: "A4 size, Merriweather serif font and a teal theme",
   },
 ];
 
-const defaultFileUrl = RESUME_EXAMPLES[0]["fileUrl"];
+const defaultFileUrl = RESUME_EXAMPLES[0].fileUrl;
+
 export default function ResumeParser() {
   const [fileUrl, setFileUrl] = useState(defaultFileUrl);
   const [textItems, setTextItems] = useState<TextItems>([]);
+  const [parseError, setParseError] = useState("");
   const lines = groupTextItemsIntoLines(textItems || []);
   const sections = groupLinesIntoSections(lines);
   const resume = extractResumeFromSections(sections);
 
   useEffect(() => {
-    async function test() {
-      const textItems = await readPdf(fileUrl);
-      setTextItems(textItems);
+    let cancelled = false;
+    async function parse() {
+      try {
+        const textItems = await readPdf(fileUrl);
+        if (cancelled) return;
+        setParseError("");
+        setTextItems(textItems);
+      } catch {
+        if (cancelled) return;
+        setTextItems([]);
+        setParseError(
+          "This PDF couldn't be read. It may be damaged, password-protected or a scanned image without selectable text."
+        );
+      }
     }
-    test();
+    parse();
+    return () => {
+      cancelled = true;
+    };
   }, [fileUrl]);
 
   return (
@@ -57,7 +63,11 @@ export default function ResumeParser() {
         <div className="flex justify-center px-2 md:col-span-3 md:h-[calc(100vh-var(--top-nav-bar-height))] md:justify-end">
           <section className="mt-5 grow px-4 md:max-w-[600px] md:px-0">
             <div className="aspect-h-[9.5] aspect-w-7">
-              <iframe src={`${fileUrl}#navpanes=0`} className="h-full w-full" />
+              <iframe
+                title="Resume PDF preview"
+                src={`${fileUrl}#navpanes=0`}
+                className="h-full w-full"
+              />
             </div>
           </section>
           <FlexboxSpacer maxWidth={45} className="hidden md:block" />
@@ -69,38 +79,35 @@ export default function ResumeParser() {
               Resume Parser Playground
             </Heading>
             <Paragraph smallMarginTop={true}>
-              This playground showcases the Resume Craft resume parser and its
-              ability to parse information from a resume PDF. Click around the
-              PDF examples below to observe different parsing results.
+              This playground showcases the Resume Craft parser and its ability
+              to parse information from a resume PDF. Click around the PDF
+              examples below to observe different parsing results.
             </Paragraph>
             <div className="mt-3 flex gap-3">
               {RESUME_EXAMPLES.map((example, idx) => (
-                <article
-                  key={idx}
+                <button
+                  key={example.fileUrl}
+                  type="button"
+                  aria-pressed={example.fileUrl === fileUrl}
                   className={cx(
-                    "flex-1 cursor-pointer rounded-md border-2 px-4 py-3 shadow-sm outline-none hover:bg-gray-50 focus:bg-gray-50",
+                    "flex-1 rounded-md border-2 px-4 py-3 text-left shadow-sm outline-none hover:bg-gray-50 focus-visible:bg-gray-50",
                     example.fileUrl === fileUrl
-                      ? "border-blue-400"
+                      ? "border-[color:var(--theme-purple)]"
                       : "border-gray-300"
                   )}
                   onClick={() => setFileUrl(example.fileUrl)}
-                  onKeyDown={(e) => {
-                    if (["Enter", " "].includes(e.key))
-                      setFileUrl(example.fileUrl);
-                  }}
-                  tabIndex={0}
                 >
-                  <h1 className="font-semibold">Resume Example {idx + 1}</h1>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <span className="block font-semibold">{example.title}</span>
+                  <span className="mt-2 block text-sm text-gray-500">
                     {example.description}
-                  </p>
-                </article>
+                  </span>
+                </button>
               ))}
             </div>
             <Paragraph>
               You can also{" "}
               <span className="font-semibold">add your resume below</span> to
-              access how well your resume would be parsed by similar Application
+              assess how well your resume would be parsed by similar Application
               Tracking Systems (ATS) used in job applications. The more
               information it can parse out, the better it indicates the resume
               is well formatted and easy to read. It is beneficial to have the
@@ -117,6 +124,11 @@ export default function ResumeParser() {
             <Heading level={2} className="!mt-[1.2em]">
               Resume Parsing Results
             </Heading>
+            {parseError && (
+              <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {parseError}
+              </p>
+            )}
             <ResumeTable resume={resume} />
             <ResumeParserAlgorithmArticle
               textItems={textItems}
