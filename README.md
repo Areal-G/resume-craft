@@ -1,134 +1,150 @@
 # Resume Craft
 
-Resume Craft is a free, private resume builder and ATS parser that runs entirely in your browser. You type on the left, a PDF updates on the right, and then you can check how a tracking system would read it.
+A free, private resume builder and ATS parser that runs entirely in your browser. Type on the left, watch the PDF update on the right, then check how an applicant tracking system will read it.
 
-## What is in it
+There is no sign-up and no server. Everything is kept in `localStorage`, PDFs are read and written in the browser, and the app keeps working offline once it has loaded.
 
-- Resume Builder
-  - The form
-    - Profile, work experience, education, projects, skills and a custom section
-    - Sections can be reordered, hidden or renamed
-    - Bullet points can be turned on or off for each section
-    - Up to 12 featured skills, shown as tags at the top of the skills section
-  - The preview
-    - Re-renders on every keystroke
-    - Zoom controls
-    - An autoscale option that fits the page to your screen
-  - Styling
-    - 12 theme colours
-      - All deep 600 to 800 shades
-      - Headings stay readable and print well in grayscale
-    - 10 font families
-      - Sans and serif
-    - Text size
-      - Compact
-      - Standard
-      - Large
-    - Page size
-      - A4
-      - US Letter
-  - Output
-    - Single-column, text-based PDFs
-    - Made with react-pdf with embedded fonts
-    - Tracking systems parse them reliably
-  - Saving
-    - State is written to `localStorage` on every change
-    - A reload never loses work
-- ATS Parser
-  - Input
-    - Drop in any resume PDF
-    - Or pick one of the two example PDFs
-      - An engineer in Lato and indigo
-      - An analyst in Merriweather and teal
-  - Output
-    - Name, email, phone and location
-    - Jobs, schools and projects
-    - Skills
-    - Shown in a table next to the PDF
-  - Errors
-    - Empty files
-    - Invalid files
-    - Upper-case `.PDF` files
-- Import
-  - Import an existing PDF to fill the form automatically
-  - Continue where you left off
-  - Replace everything with the sample resume
-- Home page
-  - An auto-typing resume preview
-  - Three steps
-  - Four feature cards
-  - Rotating resume tips
-  - An FAQ
+## Highlights
 
-## Parser algorithm
+- A live PDF preview that keeps up with your typing.
+- Twelve accent colours, ten fonts, three text sizes, A4 or US Letter.
+- Single-column, text-based PDFs that tracking systems read reliably.
+- An ATS parser that shows what a tracking system would pick up, and what it would miss.
+- Import an existing PDF to fill in the form for you.
+- Nothing leaves your machine.
 
-The parser runs locally with PDF.js (with `isEvalSupported: false`) and works in four steps. First `read-pdf` turns the text items PDF.js gives back into positioned text, keeping each item's position and font. Then `group-text-items-into-lines` merges those items into lines, and `group-lines-into-sections` splits the lines wherever it finds a section heading. Finally the `extract-*` modules go through each section and score every candidate line for each field. The scoring is the interesting part. Each field has a list of weighted features. Positive features describe the field itself, such as an email regex, bold text or all caps, and negative features describe the other fields that live in the same section, so a line with an `@` in it is pushed away from being the name, a line with a number or parentheses is pushed away because it looks like a phone, a line with a comma looks like a location, a line with a slash looks like a URL and a line with four or more words looks like a summary. The scores are added up and the highest total wins, and if the highest score is not positive the field can come back empty instead of guessing. Every step is a pure function over typed text items, which makes it easy to test, and the tests cover profile extraction, subsection splitting (including lines that start with a merged bullet) and the resume reducer. A longer explainer of the algorithm also sits below the results on the parser page itself. The optional `canvas` and `encoding` dependencies of PDF.js are aliased away in `next.config.js`, so the build needs no native modules.
+## Builder
 
-## Stack
+The builder is a structured form next to a live preview of the page. It covers your profile, work experience, education, projects, skills and a custom section, and every keystroke reflows the resume on the right. Zoom controls and an autoscale option fit the page to your screen.
 
-- Next.js 14.2 with the App Router and `standalone` output
-- React 18.2, Tailwind CSS 3.3 and Heroicons
-- TypeScript 5
-- Redux Toolkit 1.9, persisted to `localStorage`
-- @react-pdf/renderer 3 and pdfjs-dist 3
-- Jest 29 and Testing Library
+Sections can be reordered, hidden or renamed, and bullet points can be switched on or off per section. Up to 12 featured skills appear as tags at the top of the skills section.
 
-## Setup
+The styling is meant to print well. The twelve accent colours are all deep 600 to 800 shades, so headings stay readable as text and in grayscale. You can pick from ten sans and serif font families, compact, standard or large text, and A4 or US Letter pages. The preview preloads the same font files the PDF embeds, so what you see on screen is what you download.
+
+If you already have a resume, the import page can fill the form from a PDF, let you continue where you left off, or replace everything with the sample resume.
+
+## Parser
+
+Drop in any resume PDF and the parser shows the fields it extracts (name, email, phone, location, jobs, schools, projects and skills) in a table next to the PDF. Two example resumes, an engineer and an analyst, let you see it working without uploading anything.
+
+It works in four steps:
+
+1. Read the text items from the PDF with PDF.js.
+2. Group them into lines.
+3. Group the lines into sections.
+4. Score every candidate line for each field.
+
+The scoring weighs things like bold text, keywords, and patterns for email, phone and dates. Empty, invalid and upper-case `.PDF` files get clear error messages.
+
+## Under the hood
+
+The whole resume lives in two Redux slices, `resume` and `settings`. The form, the preview and the download all read from them, and a single store subscription writes every change to `localStorage`. On load, the builder reads it back.
+
+One `ResumePDF` component does double duty. It produces the downloaded file through react-pdf, and for the live preview it renders as plain DOM inside an iframe, because react-pdf's own viewer lags while you type.
+
+The parser is a chain of pure functions over typed text items: `read-pdf`, then line grouping, then section splitting, then the `extract-*` modules. Each field has a list of weighted features. Positive ones describe the field, negative ones describe its neighbours, so a line with an `@` is pushed away from being the name. The highest score wins.
+
+Here is the name field's feature list, as it appears in the source:
+
+```ts
+// src/app/lib/parse-resume-from-pdf/extract-resume-from-sections/extract-profile.ts
+const NAME_FEATURE_SETS: FeatureSet[] = [
+  [matchOnlyLetterSpaceOrPeriod, 3, true],
+  [isBold, 2],
+  [hasLetterAndIsAllUpperCase, 2],
+  // Match against other unique attributes
+  [hasAt, -4], // Email
+  [hasNumber, -4], // Phone
+  [hasParenthesis, -4], // Phone
+  [hasComma, -4], // Location
+  [hasSlash, -4], // Url
+  [has4OrMoreWords, -2], // Summary
+];
+```
+
+PDF.js only runs on the client, and its optional `canvas` and `encoding` dependencies are aliased away in `next.config.js`, so the build needs no native modules.
+
+The interface itself is kept quiet on purpose: one indigo accent (`#4338ca`) on a grey and white base, so the resume stays the focus. On phones the form takes the full width and the parser stacks the PDF above its results. There is only a light theme.
+
+The stack is Next.js 14.2, React 18.2, TypeScript 5, Redux Toolkit 1.9, Tailwind CSS 3.3, @react-pdf/renderer 3 and pdfjs-dist 3, with Jest 29 for tests.
+
+The source is laid out like this:
+
+```
+src/app/
+├── page.tsx                 # home page
+├── resume-builder/          # builder page
+├── resume-import/           # import an existing PDF or start from a sample
+├── resume-parser/           # ATS parser playground
+├── components/              # form, live preview, dropzone, navigation
+└── lib/
+    ├── redux/               # resume and settings slices, localStorage persistence
+    └── parse-resume-from-pdf/  # read → lines → sections → extract
+public/
+├── resume-example/          # example PDFs for the parser
+└── fonts/                   # embedded PDF fonts
+```
+
+## Getting started
 
 You need Node.js 20+ and npm.
 
 ```bash
 git clone <repository-url> resume-craft
-```
-
-```bash
 cd resume-craft
-```
-
-```bash
 npm ci --ignore-scripts
-```
-
-```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000` and click **Try with a sample resume** to start from a complete example. No environment variables are needed.
 
-To lint:
+`--ignore-scripts` skips the native build of the optional `canvas` package, which the app never uses.
 
-```bash
-npm run lint
-```
-
-To type check:
-
-```bash
-npm run typecheck
-```
-
-To run the tests once:
-
-```bash
-npm run test:ci
-```
-
-To build:
+To build for production:
 
 ```bash
 npm run build
-```
-
-```bash
 npm start
 ```
 
-With Docker:
+Or with Docker:
 
 ```bash
 docker build -t resume-craft .
-```
-
-```bash
 docker run -p 3000:3000 resume-craft
 ```
+
+The build is a self-contained Node server (`output: 'standalone'`), so it also runs on Vercel, Netlify or any Node host.
+
+The scripts you will use most:
+
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` / `npm start` | Production build and server |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run format` / `npm run format:check` | Prettier write / check |
+| `npm test` / `npm run test:ci` | Jest in watch mode / once |
+
+## Contributing
+
+Before opening a pull request, please run the same checks CI runs on every push:
+
+```bash
+npm run lint
+npm run typecheck
+npm run format:check
+npm run test:ci
+```
+
+Formatting is handled by Prettier with the Tailwind plugin (`npm run format` fixes it). CI also makes a production build, so a broken import will show up there.
+
+There are 13 Jest tests today. They cover profile extraction, subsection splitting (including lines that start with a merged bullet), the resume reducer and two small utilities. The parser stages are pure functions, so new extraction rules are easiest to add with a small test next to them.
+
+Some things that would be welcome:
+
+- More templates, such as two-column and compact.
+- Several saved resumes, each with its own name.
+- JSON export and import for backups.
+- Keyboard reordering for sections and entries.
