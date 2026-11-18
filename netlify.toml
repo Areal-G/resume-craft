@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Public value, inlined at build time (metadataBase for Open Graph/Twitter URLs)
+  NEXT_PUBLIC_SITE_URL = "https://resume-craft.arealjagema.com"

@@ -15,8 +15,9 @@ jobs:
           node-version: 20
           cache: npm
       # canvas is an optional pdf.js dependency that is aliased away in
-      # next.config.js, so install scripts are not needed
-      - run: npm ci --ignore-scripts
+      # next.config.js, so install scripts are not needed. The unbuilt package
+      # is removed so jsdom (Jest) doesn't try to load its native bindings.
+      - run: npm ci --ignore-scripts && rm -rf node_modules/canvas
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run format:check
